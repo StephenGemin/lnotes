@@ -20,16 +20,15 @@ all: build
 
 build: $(BUILD_DIR)/notes
 
-$(BUILD_DIR):
-	mkdir -p $(BUILD_DIR)
-
-$(BUILD_DIR)/notes: $(BUILD_DIR) $(SOURCES_MAIN) $(HEADERS)
+$(BUILD_DIR)/notes: $(SOURCES_MAIN) $(HEADERS)
+	@mkdir -p $(BUILD_DIR)
 	$(CC) $(CFLAGS) -Isrc -o $@ $(SOURCES_MAIN) $(LDFLAGS)
 
 test: $(BUILD_DIR)/test_notes
 	$(BUILD_DIR)/test_notes
 
-$(BUILD_DIR)/test_notes: $(BUILD_DIR) $(SOURCES_TEST) $(HEADERS)
+$(BUILD_DIR)/test_notes: $(SOURCES_TEST) $(HEADERS)
+	@mkdir -p $(BUILD_DIR)
 	$(CC) $(CFLAGS) -Isrc -o $@ $(SOURCES_TEST) $(LDFLAGS)
 
 install: build
