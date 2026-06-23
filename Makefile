@@ -14,7 +14,7 @@ SOURCES_MAIN = src/main.c src/utils.c src/notes.c src/search.c
 SOURCES_TEST = tests/test_main.c src/utils.c src/notes.c
 HEADERS = src/notes.h
 
-.PHONY: all build test install uninstall clean
+.PHONY: all build test test-scripts install uninstall clean
 
 all: build
 
@@ -30,6 +30,9 @@ test: $(BUILD_DIR)/test_notes
 $(BUILD_DIR)/test_notes: $(SOURCES_TEST) $(HEADERS)
 	@mkdir -p $(BUILD_DIR)
 	$(CC) $(CFLAGS) -Isrc -o $@ $(SOURCES_TEST) $(LDFLAGS)
+
+test-scripts: build
+	@bash tests/test_scripts.sh
 
 install: build
 	@PREFIX=$(PREFIX) bash scripts/install.sh
