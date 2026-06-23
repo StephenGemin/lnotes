@@ -6,17 +6,31 @@ frontmatter, and can be opened in any editor or renderer.
 Notes are stored under `~/Documents/lnotes`. On Linux, `XDG_DOCUMENTS_DIR` is
 respected if set (`$XDG_DOCUMENTS_DIR/lnotes`).
 
-## Requirements
+## Install
 
-- C99 compiler (GCC or Clang)
-- POSIX OS (Linux or macOS)
-
-## Build & Install
+**Requirements:** GCC or Clang, and a POSIX OS (Linux or macOS).
 
 ```sh
-make          # build
-make test     # run unit tests
-make install  # install to ~/.local/bin/notes
+make install
+```
+
+This builds the app and copies the `notes` binary to `~/.local/bin/notes`.
+Make sure `~/.local/bin` is on your `PATH`. If the `notes` command isn't found after installing, add this line to your shell config (`~/.bashrc`, `~/.zshrc`, etc.) and restart your terminal:
+
+```sh
+export PATH="$HOME/.local/bin:$PATH"
+```
+
+## Uninstall
+
+```sh
+make uninstall
+```
+
+You will be asked to confirm before anything is deleted. This removes the `notes` binary and your notes directory (`~/Documents/lnotes`). To skip the confirmation prompt:
+
+```sh
+make uninstall FORCE=1
 ```
 
 ## Commands
