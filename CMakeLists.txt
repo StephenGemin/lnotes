@@ -31,3 +31,15 @@ if(UNIX AND NOT APPLE)
 endif()
 
 install(TARGETS notes RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+# ---- Tests ----
+enable_testing()
+
+add_executable(test_notes tests/test_main.c src/utils.c src/notes.c)
+target_include_directories(test_notes PRIVATE src)
+target_compile_options(test_notes PRIVATE -Wall -Wextra)
+if(UNIX AND NOT APPLE)
+    target_compile_definitions(test_notes PRIVATE _POSIX_C_SOURCE=200809L)
+endif()
+
+add_test(NAME unit_tests COMMAND test_notes)
