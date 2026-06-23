@@ -6,7 +6,6 @@ frontmatter, stored locally under `~/Documents/lnotes`. No cloud, no database.
 ## Requirements
 
 - C99 compiler (GCC or Clang)
-- CMake 3.16+
 - POSIX OS (Linux or macOS)
 
 ## Build & Install
@@ -20,9 +19,7 @@ make install  # install to ~/.local/bin/notes
 Override the install prefix:
 
 ```sh
-cmake -B build -DCMAKE_INSTALL_PREFIX=/usr/local
-cmake --build build --parallel
-cmake --install build
+make install PREFIX=/usr/local
 ```
 
 ## Usage
