@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    name: Build & Test (${{ matrix.os }}, ${{ matrix.cc }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            cc: gcc
+          - os: ubuntu-latest
+            cc: clang
+          - os: macos-latest
+            cc: clang
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        env:
+          CC: ${{ matrix.cc }}
+        run: make build
+
+      - name: Run unit tests
+        env:
+          CC: ${{ matrix.cc }}
+        run: make test
+
+  sanitizers:
+    name: Sanitizers (ASan + UBSan)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and test with sanitizers
+        env:
+          CC: clang
+          CFLAGS: >-
+            -Wall -Wextra -Wpedantic -Werror -std=c99
+            -fsanitize=address,undefined
+            -fno-omit-frame-pointer -g
+        run: make test
+
+  static-analysis:
+    name: Static Analysis (cppcheck)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install cppcheck
+        run: sudo apt-get install -y cppcheck
+
+      - name: Run cppcheck
+        run: |
+          cppcheck \
+            --enable=warning,performance,portability \
+            --error-exitcode=1 \
+            --std=c99 \
+            --suppress=missingIncludeSystem \
+            -I src \
+            src/
+
+  valgrind:
+    name: Memory Check (valgrind)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install valgrind
+        run: sudo apt-get install -y valgrind
+
+      - name: Build tests
+        run: make test
+
+      - name: Run tests under valgrind
+        run: |
+          valgrind \
+            --error-exitcode=1 \
+            --leak-check=full \
+            --show-leak-kinds=all \
+            --track-origins=yes \
+            build/test_notes

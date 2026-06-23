@@ -1,0 +1,15 @@
+lnotes (0.1.0) unstable; urgency=low
+
+  * Initial release: notes add, notes rm, notes ls, notes search subcommands
+  * Notes stored as Markdown files with YAML frontmatter under ~/Documents/lnotes;
+    XDG_DOCUMENTS_DIR respected on Linux
+  * Five default categories with numeric prefixes (01_general through 05_medical)
+  * New categories created automatically with the next available prefix
+  * Search uses POSIX ERE matched case-insensitively; supports title-only (-t)
+    and body-only (-b) modes
+  * Pure Makefile build system, C99, GCC and Clang supported; -Wall -Wextra
+    -Wpedantic -Werror enforced
+  * GitHub Actions CI: Linux/macOS matrix, AddressSanitizer + UBSan, cppcheck
+    static analysis, valgrind memory check; 10-minute timeout per job
+
+ -- Stephen Gemin <s.gemin88@gmail.com>  Tue, 23 Jun 2026 22:26:26 +0000
