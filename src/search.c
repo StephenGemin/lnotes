@@ -1,4 +1,4 @@
-#include "notes.h"
+#include "search.h"
 
 #include <stdio.h>
 #include <stdlib.h>
