@@ -14,7 +14,7 @@ SOURCES_MAIN = src/main.c src/utils.c src/notes.c src/search.c
 SOURCES_TEST = tests/test_utils.c src/utils.c src/notes.c
 HEADERS = src/notes.h
 
-.PHONY: all build test test-utils test-scripts test-raise install uninstall clean
+.PHONY: all build test install uninstall clean
 
 all: build
 
@@ -24,21 +24,13 @@ $(BUILD_DIR)/obl: $(SOURCES_MAIN) $(HEADERS)
 	@mkdir -p $(BUILD_DIR)
 	$(CC) $(CFLAGS) -Isrc -o $@ $(SOURCES_MAIN) $(LDFLAGS)
 
-test: test-utils
-	@for f in tests/test_*.sh; do bash $$f || exit 1; done
-
-test-utils: $(BUILD_DIR)/test_utils
+test: $(BUILD_DIR)/test_utils
 	$(BUILD_DIR)/test_utils
+	@for f in tests/test_*.sh; do bash $$f || exit 1; done
 
 $(BUILD_DIR)/test_utils: $(SOURCES_TEST) $(HEADERS)
 	@mkdir -p $(BUILD_DIR)
 	$(CC) $(CFLAGS) -Isrc -o $@ $(SOURCES_TEST) $(LDFLAGS)
-
-test-scripts: build
-	@bash tests/test_scripts.sh
-
-test-raise: build
-	@bash tests/test_raise_command.sh
 
 install: build
 	@PREFIX=$(PREFIX) bash scripts/install.sh
