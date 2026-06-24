@@ -3,6 +3,8 @@
 A minimal POSIX C CLI note manager. Notes are plain Markdown files with YAML frontmatter.
 Keep it small, portable, and dependency-free.
 
+@AGENTS.md
+
 ## Build
 
 ```sh
