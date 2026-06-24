@@ -14,7 +14,7 @@ SOURCES_MAIN = src/main.c src/utils.c src/notes.c src/search.c
 SOURCES_TEST = tests/test_main.c src/utils.c src/notes.c
 HEADERS = src/notes.h
 
-.PHONY: all build test test-scripts install uninstall clean
+.PHONY: all build test test-scripts test-raise install uninstall clean
 
 all: build
 
@@ -33,6 +33,9 @@ $(BUILD_DIR)/test_obl: $(SOURCES_TEST) $(HEADERS)
 
 test-scripts: build
 	@bash tests/test_scripts.sh
+
+test-raise: build
+	@bash tests/test_raise_command.sh
 
 install: build
 	@PREFIX=$(PREFIX) bash scripts/install.sh
