@@ -76,13 +76,22 @@ Do not perform destructive operations unless the command explicitly requests it.
 
 ```yaml
 ---
+id: a1b2c3d4
 title: Example title
-created: 2026-06-23T12:00:00Z
-updated: 2026-06-23T12:00:00Z
+category: general
+date: 2026-06-23
 ---
 ```
 
-Body follows the closing `---`. Simple key/value parsing is sufficient; no full YAML parser.
+Keys, as written by `obl add`:
+
+- `id` — 8-character hex identifier used to address the note.
+- `title` — the note's title.
+- `category` — category name, without the directory's numeric prefix.
+- `date` — creation date, `YYYY-MM-DD` (local time).
+
+Body follows the closing `---`. Simple key/value parsing is sufficient; no full YAML
+parser. Unknown keys are ignored, so notes may carry extra frontmatter without breaking.
 
 ## CLI
 
