@@ -5,6 +5,7 @@
 #include <string.h>
 #include <strings.h>
 #include <ctype.h>
+#include <errno.h>
 #include <time.h>
 #include <dirent.h>
 #include <sys/stat.h>
@@ -38,7 +39,11 @@ static void makedirs(const char *path) {
     mkdir(tmp, 0755);
 }
 
+/* Seed the default categories, but only the first time the store is
+   created. Once base exists, the category set is whatever the user has
+   made it, so re-seeding would resurrect categories they removed. */
 static void init_notes_dir(const char *base) {
+    if (is_dir(base)) return;
     makedirs(base);
     char path[NOTES_MAX_PATH];
     for (int i = 0; DEFAULT_CATEGORIES[i]; i++) {
@@ -56,6 +61,17 @@ static const char *strip_prefix(const char *name) {
         return name + 3;
     }
     return name;
+}
+
+/* Numeric NN_ priority prefix of a category dir, or -1 if it has none. */
+static int category_prefix(const char *name) {
+    if (strlen(name) > 3 &&
+        isdigit((unsigned char)name[0]) &&
+        isdigit((unsigned char)name[1]) &&
+        name[2] == '_') {
+        return (name[0] - '0') * 10 + (name[1] - '0');
+    }
+    return -1;
 }
 
 /* Return the next available numeric prefix (max existing + 1). */
@@ -175,12 +191,11 @@ int cmd_add(int argc, char **argv) {
 
     char cat_dir[3072];
     if (find_category_dir(base, category, cat_dir, sizeof(cat_dir)) != 0) {
-        int prefix = next_category_prefix(base);
-        snprintf(cat_dir, sizeof(cat_dir), "%s/%02d_%s", base, prefix, category);
-        if (mkdir(cat_dir, 0755) != 0) {
-            perror("mkdir");
-            return 1;
-        }
+        fprintf(stderr,
+                "obl: category '%s' does not exist; "
+                "create it with 'obl cat add %s'\n",
+                category, category);
+        return 1;
     }
 
     char id[NOTES_MAX_ID];
@@ -485,5 +500,160 @@ int cmd_export(int argc, char **argv) {
     }
 
     fprintf(stderr, "obl: export failed: no supported archive tool available\n");
+    return 1;
+}
+
+/* ------------------------------------------------------------------ */
+/* cmd_category                                                         */
+/* ------------------------------------------------------------------ */
+
+/* True if a category with this exact name (case-insensitive, ignoring
+   the NN_ priority prefix) already exists under base. */
+static int category_exists(const char *base, const char *name) {
+    DIR *d = opendir(base);
+    if (!d) return 0;
+    int found = 0;
+    struct dirent *e;
+    while ((e = readdir(d)) != NULL) {
+        if (e->d_name[0] == '.') continue;
+        char path[3072];
+        snprintf(path, sizeof(path), "%s/%s", base, e->d_name);
+        if (!is_dir(path)) continue;
+        if (strcasecmp(strip_prefix(e->d_name), name) == 0) { found = 1; break; }
+    }
+    closedir(d);
+    return found;
+}
+
+/* After removing the category at `removed_prefix`, shift every
+   lower-priority category up by one so the numbering stays contiguous.
+   Renames only touch directory prefixes; note files ride along. */
+static void compact_categories(const char *base, int removed_prefix) {
+    for (int slot = removed_prefix; ; slot++) {
+        DIR *d = opendir(base);
+        if (!d) return;
+        char oldname[256];
+        oldname[0] = '\0';
+        struct dirent *e;
+        while ((e = readdir(d)) != NULL) {
+            if (e->d_name[0] == '.') continue;
+            if (category_prefix(e->d_name) == slot + 1) {
+                snprintf(oldname, sizeof(oldname), "%s", e->d_name);
+                break;
+            }
+        }
+        closedir(d);
+        if (oldname[0] == '\0') return; /* nothing left to shift */
+
+        char oldpath[3072], newpath[3072];
+        snprintf(oldpath, sizeof(oldpath), "%s/%s", base, oldname);
+        snprintf(newpath, sizeof(newpath), "%s/%02d_%s",
+                 base, slot, strip_prefix(oldname));
+        rename(oldpath, newpath);
+    }
+}
+
+static int cat_add(int argc, char **argv) {
+    if (argc < 1) {
+        fprintf(stderr, "usage: obl cat add <name>\n");
+        return 1;
+    }
+    const char *name = argv[0];
+
+    if (name[0] == '\0' || name[0] == '.' || strchr(name, '/')) {
+        fprintf(stderr, "obl: invalid category name '%s'\n", name);
+        return 1;
+    }
+
+    char base[2048];
+    if (get_notes_dir(base, sizeof(base)) != 0) return 1;
+    init_notes_dir(base);
+
+    if (category_exists(base, name)) {
+        fprintf(stderr, "obl: category '%s' already exists\n", name);
+        return 1;
+    }
+
+    /* Append as the lowest priority (next prefix after the current max). */
+    int prefix = next_category_prefix(base);
+    char cat_dir[3072];
+    snprintf(cat_dir, sizeof(cat_dir), "%s/%02d_%s", base, prefix, name);
+    if (mkdir(cat_dir, 0755) != 0) {
+        perror("mkdir");
+        return 1;
+    }
+
+    printf("Created category %02d_%s\n", prefix, name);
+    return 0;
+}
+
+static int cat_remove(int argc, char **argv) {
+    if (argc < 1) {
+        fprintf(stderr, "usage: obl cat rm <name>\n");
+        return 1;
+    }
+    const char *name = argv[0];
+
+    char base[2048];
+    if (get_notes_dir(base, sizeof(base)) != 0) return 1;
+
+    /* Locate the category by exact name (don't fuzzy-match a destructive op). */
+    char target[3072];
+    int found = 0, prefix = -1;
+    DIR *d = opendir(base);
+    if (d) {
+        struct dirent *e;
+        while ((e = readdir(d)) != NULL) {
+            if (e->d_name[0] == '.') continue;
+            char path[3072];
+            snprintf(path, sizeof(path), "%s/%s", base, e->d_name);
+            if (!is_dir(path)) continue;
+            if (strcasecmp(strip_prefix(e->d_name), name) == 0) {
+                snprintf(target, sizeof(target), "%s", path);
+                prefix = category_prefix(e->d_name);
+                found = 1;
+                break;
+            }
+        }
+        closedir(d);
+    }
+
+    if (!found) {
+        fprintf(stderr, "obl: category '%s' does not exist\n", name);
+        return 1;
+    }
+
+    /* rmdir refuses a non-empty directory, which is exactly the guard we
+       want: never delete notes as a side effect of removing a category. */
+    if (rmdir(target) != 0) {
+        if (errno == ENOTEMPTY || errno == EEXIST)
+            fprintf(stderr,
+                    "obl: category '%s' is not empty; remove its notes first\n",
+                    name);
+        else
+            perror("rmdir");
+        return 1;
+    }
+
+    if (prefix >= 1)
+        compact_categories(base, prefix);
+
+    printf("Removed category %s\n", name);
+    return 0;
+}
+
+int cmd_category(int argc, char **argv) {
+    if (argc < 1) {
+        fprintf(stderr, "usage: obl cat <add|rm> <name>\n");
+        return 1;
+    }
+    const char *action = argv[0];
+    if (strcmp(action, "add") == 0)
+        return cat_add(argc - 1, argv + 1);
+    if (strcmp(action, "rm") == 0 || strcmp(action, "remove") == 0)
+        return cat_remove(argc - 1, argv + 1);
+
+    fprintf(stderr, "obl: unknown category action '%s'\n", action);
+    fprintf(stderr, "usage: obl cat <add|rm> <name>\n");
     return 1;
 }

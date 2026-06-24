@@ -66,12 +66,20 @@ assert_true "note file has title frontmatter" \
 assert_true "default category note lands in general dir" \
     sh -c "echo '$note_file' | grep -q '/[0-9][0-9]_general/'"
 
-# Custom category via -c
+# Unknown category is an error; nothing is created
+assert_true "obl add -c unknown category exits non-zero" \
+    sh -c "! OBL_DIR='$TEST_NOTES' EDITOR=true '$OBL' add 'Nope' -c nosuchcat 2>/dev/null"
+
+assert_true "obl add -c unknown category creates no directory" \
+    sh -c "! ls -d '$TEST_NOTES'/*_nosuchcat 2>/dev/null"
+
+# Custom category works once it has been created explicitly
+OBL_DIR="$TEST_NOTES" "$OBL" cat add projects > /dev/null
 cat_out=$(OBL_DIR="$TEST_NOTES" EDITOR=true "$OBL" add "Custom Cat Note" -c projects 2>&1)
 cat_id=$(echo "$cat_out" | grep -oE '[0-9a-f]{8}' | head -1)
 cat_file=$(find "$TEST_NOTES" -name "${cat_id}_*.md" | head -1)
 
-assert_true "obl add -c places note in a projects dir" \
+assert_true "obl add -c places note in an existing projects dir" \
     sh -c "echo '$cat_file' | grep -q '_projects/'"
 
 # Missing title
