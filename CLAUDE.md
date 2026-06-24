@@ -80,9 +80,12 @@ Error messages must be actionable: notes: could not open file: <path>, not just 
 - New features require tests.
 
 ## Documentation
-- When a new feature is complete and agreed upon, check `README.md` and update it to reflect the change.
-- When the project directory structure changes and those changes are agreed upon, update the `## Project structure` section in this file.
-- Do not update documentation speculatively — only after the implementation or structure change is finalized.
+Never update documentation without explicit approval. When documentation changes are warranted, propose a summary of the changes and wait for confirmation before editing any file.
+
+Files to keep in sync:
+- `README.md` — update when a new feature is added or CLI behavior changes.
+- `CHANGELOG` — add an entry for new features, bug fixes, refactors, and breaking changes.
+- `CLAUDE.md` (this file) `## Project structure` — update when the directory layout changes.
 
 ## Pull requests
 - Builds with `make`.
