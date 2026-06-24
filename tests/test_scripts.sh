@@ -55,6 +55,34 @@ help_output=$("$TEST_PREFIX/bin/obl" -h 2>&1 || true)
 assert_nonempty "obl -h produces output" "$help_output"
 
 # ------------------------------------------------------------------ #
+# raise command                                                        #
+# ------------------------------------------------------------------ #
+echo "raise"
+
+OBL_TEST_NOTES=$(mktemp -d)
+trap 'rm -rf "$OBL_TEST_NOTES"' EXIT
+
+add_out=$(OBL_DIR="$OBL_TEST_NOTES" EDITOR=true "$TEST_PREFIX/bin/obl" add "Raise Test Note" 2>&1)
+raise_id=$(echo "$add_out" | grep -oE '[0-9a-f]{8}' | head -1)
+
+assert_nonempty "obl add returns an id" "$raise_id"
+
+assert_true "obl raise by id exits 0" \
+    sh -c "OBL_DIR='$OBL_TEST_NOTES' EDITOR=true '$TEST_PREFIX/bin/obl' raise '$raise_id'"
+
+assert_true "obl raise by title exits 0" \
+    sh -c "OBL_DIR='$OBL_TEST_NOTES' EDITOR=true '$TEST_PREFIX/bin/obl' raise 'Raise Test Note'"
+
+raise_missing=$(OBL_DIR="$OBL_TEST_NOTES" EDITOR=true "$TEST_PREFIX/bin/obl" raise "no-such-note" 2>&1; echo "rc=$?")
+assert_true "obl raise unknown id exits non-zero" \
+    sh -c "echo '$raise_missing' | grep -q 'rc=1'"
+
+assert_true "obl raise missing arg exits non-zero" \
+    sh -c "! OBL_DIR='$OBL_TEST_NOTES' EDITOR=true '$TEST_PREFIX/bin/obl' raise 2>/dev/null"
+
+rm -rf "$OBL_TEST_NOTES"
+
+# ------------------------------------------------------------------ #
 # Uninstall                                                            #
 # ------------------------------------------------------------------ #
 echo "uninstall"

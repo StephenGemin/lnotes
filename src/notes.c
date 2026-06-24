@@ -266,6 +266,47 @@ int cmd_remove(int argc, char **argv) {
 }
 
 /* ------------------------------------------------------------------ */
+/* cmd_open                                                             */
+/* ------------------------------------------------------------------ */
+
+int cmd_open(int argc, char **argv) {
+    if (argc < 1) {
+        fprintf(stderr, "usage: obl raise <id|title>\n");
+        return 1;
+    }
+
+    const char *target = argv[0];
+
+    Note *notes = malloc(NOTES_MAX_COUNT * sizeof(Note));
+    if (!notes) { perror("malloc"); return 1; }
+
+    int count = collect_all_notes(NULL, notes, NOTES_MAX_COUNT);
+    if (count < 0) { free(notes); return 1; }
+
+    Note *found = NULL;
+    for (int i = 0; i < count; i++) {
+        if (strcmp(notes[i].id, target) == 0 ||
+            strcasecmp(notes[i].title, target) == 0) {
+            found = &notes[i];
+            break;
+        }
+    }
+
+    if (!found) {
+        fprintf(stderr, "obl: '%s' not found\n", target);
+        free(notes);
+        return 1;
+    }
+
+    char filepath[NOTES_MAX_PATH];
+    snprintf(filepath, sizeof(filepath), "%s", found->filepath);
+    free(notes);
+
+    open_in_editor(filepath);
+    return 0;
+}
+
+/* ------------------------------------------------------------------ */
 /* cmd_list                                                             */
 /* ------------------------------------------------------------------ */
 
