@@ -43,6 +43,13 @@ is explicitly wanted. These are the highest-impact surfaces:
 - Adding any dependency outside the C standard library and POSIX.
 - Broad rewrites or restructuring across multiple files.
 
+## Git history
+
+Keep a clean, linear history. When a branch conflicts with its base, prefer rebase
+over merge. Attempt to resolve the conflicts. If resolution is ambiguous or risks
+discarding intent on either side, stop, explain the conflict, and ask for direction
+rather than guessing.
+
 ## Build and test
 
 ```sh
