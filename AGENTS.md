@@ -49,7 +49,9 @@ is explicitly wanted. These are the highest-impact surfaces:
 make          # must compile cleanly with both gcc and clang
 make clean
 make install  # installs to ~/.local/bin/obl
-make test
+make test       # runs all tests (unit + e2e)
+make test-unit  # compiled C unit tests only
+make test-e2e   # shell tests that run the real obl binary
 make uninstall
 ```
 
