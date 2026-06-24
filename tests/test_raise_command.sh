@@ -41,34 +41,30 @@ trap cleanup EXIT
 
 cd "$PROJECT_ROOT"
 
-# ------------------------------------------------------------------ #
-# Install                                                              #
-# ------------------------------------------------------------------ #
-echo "install"
-
 PREFIX="$TEST_PREFIX" bash scripts/install.sh > /dev/null
 
-assert_true    "binary installed to PREFIX/bin/obl" \
-               test -f "$TEST_PREFIX/bin/obl"
-
-help_output=$("$TEST_PREFIX/bin/obl" -h 2>&1 || true)
-assert_nonempty "obl -h produces output" "$help_output"
-
 # ------------------------------------------------------------------ #
-# Uninstall                                                            #
+# raise command                                                        #
 # ------------------------------------------------------------------ #
-echo "uninstall"
+echo "raise"
 
-mkdir -p "$TEST_NOTES/01_general"
-touch "$TEST_NOTES/01_general/abc123_sample-note.md"
+add_out=$(OBL_DIR="$TEST_NOTES" EDITOR=true "$TEST_PREFIX/bin/obl" add "Raise Test Note" 2>&1)
+raise_id=$(echo "$add_out" | grep -oE '[0-9a-f]{8}' | head -1)
 
-PREFIX="$TEST_PREFIX" OBL_DIR="$TEST_NOTES" bash scripts/uninstall.sh -f > /dev/null
+assert_nonempty "obl add returns an id" "$raise_id"
 
-assert_true "binary removed after uninstall" \
-            test ! -f "$TEST_PREFIX/bin/obl"
+assert_true "obl raise by id exits 0" \
+    sh -c "OBL_DIR='$TEST_NOTES' EDITOR=true '$TEST_PREFIX/bin/obl' raise '$raise_id'"
 
-assert_true "notes directory removed after uninstall" \
-            test ! -d "$TEST_NOTES"
+assert_true "obl raise by title exits 0" \
+    sh -c "OBL_DIR='$TEST_NOTES' EDITOR=true '$TEST_PREFIX/bin/obl' raise 'Raise Test Note'"
+
+raise_missing=$(OBL_DIR="$TEST_NOTES" EDITOR=true "$TEST_PREFIX/bin/obl" raise "no-such-note" 2>&1; echo "rc=$?")
+assert_true "obl raise unknown id exits non-zero" \
+    sh -c "echo '$raise_missing' | grep -q 'rc=1'"
+
+assert_true "obl raise missing arg exits non-zero" \
+    sh -c "! OBL_DIR='$TEST_NOTES' EDITOR=true '$TEST_PREFIX/bin/obl' raise 2>/dev/null"
 
 # ------------------------------------------------------------------ #
 # Summary                                                              #
