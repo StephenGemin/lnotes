@@ -71,6 +71,44 @@ assert_true "notes directory removed after uninstall" \
             test ! -d "$TEST_NOTES"
 
 # ------------------------------------------------------------------ #
+# Export                                                              #
+# ------------------------------------------------------------------ #
+echo "export"
+
+EXPORT_NOTES="$TEST_DIR/export_notes"
+EXPORT_OUT="$TEST_DIR/export_out"
+mkdir -p "$EXPORT_NOTES/01_general" "$EXPORT_OUT"
+
+cat > "$EXPORT_NOTES/01_general/abc12345_test-note.md" << 'EOF'
+---
+id: abc12345
+title: Test Note
+category: general
+date: 2026-06-24
+---
+
+# Test Note
+EOF
+
+OBL_DIR="$EXPORT_NOTES" "$PROJECT_ROOT/build/obl" export "$EXPORT_OUT/backup" > /dev/null 2>&1
+
+assert_true "export creates an archive file" \
+            bash -c 'ls "$1"/backup.* 2>/dev/null | grep -q .' -- "$EXPORT_OUT"
+
+ARCHIVE=$(ls "$EXPORT_OUT"/backup.* 2>/dev/null | head -1)
+case "$ARCHIVE" in
+    *.tar.gz) LIST_CMD="tar -tzf" ;;
+    *.zip)    LIST_CMD="unzip -l" ;;
+    *.tar)    LIST_CMD="tar -tf"  ;;
+    *)        LIST_CMD="" ;;
+esac
+
+if [ -n "$LIST_CMD" ] && [ -n "$ARCHIVE" ]; then
+    assert_true "archive contains note file" \
+                bash -c '$1 "$2" 2>/dev/null | grep -q "\.md"' -- "$LIST_CMD" "$ARCHIVE"
+fi
+
+# ------------------------------------------------------------------ #
 # Summary                                                              #
 # ------------------------------------------------------------------ #
 echo ""

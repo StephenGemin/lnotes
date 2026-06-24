@@ -7,11 +7,12 @@ static void usage(void) {
         "usage: obl <command> [options]\n"
         "\n"
         "Commands:\n"
-        "  add   <title> [-c <category>]             Create a new note\n"
-        "  raise <id|title>                          Open a note in $EDITOR\n"
-        "  rm    <id|title>                          Remove a note\n"
-        "  ls    [-v] [-c <category>]               List notes\n"
-        "  search <pattern> [-c <cat>] [-t] [-b]    Search notes (regex)\n"
+        "  add    <title> [-c <category>]            Create a new note\n"
+        "  raise  <id|title>                         Open a note in $EDITOR\n"
+        "  rm     <id|title>                         Remove a note\n"
+        "  ls     [-v] [-c <category>]               List notes\n"
+        "  search <pattern> [-c <cat>] [-t] [-b]     Search notes (regex)\n"
+        "  export [output-base]                       Archive all notes to a file\n"
         "\n"
         "Search flags:\n"
         "  -t    Title only\n"
@@ -34,16 +35,18 @@ int main(int argc, char **argv) {
     int sub_argc = argc - 2;
     char **sub_argv = argv + 2;
 
-    if (strcmp(cmd, "add") == 0)                      
+    if (strcmp(cmd, "add") == 0)
         return cmd_add(sub_argc, sub_argv);
     if (strcmp(cmd, "rm") == 0 || strcmp(cmd, "remove") == 0)
         return cmd_remove(sub_argc, sub_argv);
-    if (strcmp(cmd, "ls") == 0 || strcmp(cmd, "list") == 0)                     
+    if (strcmp(cmd, "ls") == 0 || strcmp(cmd, "list") == 0)
         return cmd_list(sub_argc, sub_argv);
     if (strcmp(cmd, "search") == 0)
         return cmd_search(sub_argc, sub_argv);
     if (strcmp(cmd, "raise") == 0)
         return cmd_open(sub_argc, sub_argv);
+    if (strcmp(cmd, "export") == 0)
+        return cmd_export(sub_argc, sub_argv);
 
     fprintf(stderr, "obl: unknown command '%s'\n\n", cmd);
     usage();
