@@ -85,7 +85,7 @@ Never update documentation without explicit approval. When documentation changes
 Files to keep in sync:
 - `README.md` — update when a new feature is added or CLI behavior changes.
 - `CHANGELOG` — add an entry for new features, bug fixes, refactors, and breaking changes.
-- `CLAUDE.md` (this file) `## Project structure` — update when the directory layout changes.
+- `CLAUDE.md` `## Project structure` section — update when the directory layout changes.
 
 ## Pull requests
 - Builds with `make`.
