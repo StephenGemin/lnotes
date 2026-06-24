@@ -24,7 +24,7 @@ $(BUILD_DIR)/obl: $(SOURCES_MAIN) $(HEADERS)
 	@mkdir -p $(BUILD_DIR)
 	$(CC) $(CFLAGS) -Isrc -o $@ $(SOURCES_MAIN) $(LDFLAGS)
 
-test: $(BUILD_DIR)/test_utils
+test: build $(BUILD_DIR)/test_utils
 	$(BUILD_DIR)/test_utils
 	@for f in tests/test_*.sh; do bash $$f || exit 1; done
 
