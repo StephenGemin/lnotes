@@ -1,0 +1,30 @@
+changelog:
+  exclude:
+    labels:
+      - chore
+      - ci
+  categories:
+    - title: "💥 Breaking Changes"
+      labels:
+        - breaking-change
+    - title: "🚀 New Features"
+      labels:
+        - feature
+    - title: "🐛 Bug Fixes"
+      labels:
+        - bug
+    - title: "⚡ Performance"
+      labels:
+        - performance
+    - title: "♻️ Refactoring"
+      labels:
+        - refactor
+    - title: "🔒 Security"
+      labels:
+        - security
+    - title: "📖 Documentation"
+      labels:
+        - documentation
+    - title: "🧪 Tests"
+      labels:
+        - test
