@@ -12,8 +12,7 @@ src/notes.h     shared Note struct, constants, all declarations
 src/search.c    cmd_search
 src/utils.c     get_notes_dir (storage path logic), parse_frontmatter,
                 generate_id, title_to_slug, open_in_editor
-tests/test_main.c      C unit tests
-tests/test_scripts.sh  shell integration tests
+tests/                 C unit tests and shell integration tests (one file per module/command)
 scripts/install.sh     install logic
 scripts/uninstall.sh   uninstall logic
 ```
@@ -82,9 +81,10 @@ Body follows the closing `---`. Simple key/value parsing is sufficient; no full 
 
 Minimal, obvious commands:
 ```sh
-obl add "Title" [-c <category>]
-obl rm  <id|title>
-obl ls  [-v] [-c <category>]
+obl add   "Title" [-c <category>]
+obl raise <id|title>
+obl rm    <id|title>
+obl ls    [-v] [-c <category>]
 obl search <pattern> [-c <cat>] [-t] [-b]
 ```
 

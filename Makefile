@@ -14,7 +14,7 @@ SOURCES_MAIN = src/main.c src/utils.c src/notes.c src/search.c
 SOURCES_TEST = tests/test_utils.c src/utils.c src/notes.c
 HEADERS = src/notes.h
 
-.PHONY: all build test-utils test-scripts test-raise install uninstall clean
+.PHONY: all build test test-utils test-scripts test-raise install uninstall clean
 
 all: build
 
@@ -23,6 +23,9 @@ build: $(BUILD_DIR)/obl
 $(BUILD_DIR)/obl: $(SOURCES_MAIN) $(HEADERS)
 	@mkdir -p $(BUILD_DIR)
 	$(CC) $(CFLAGS) -Isrc -o $@ $(SOURCES_MAIN) $(LDFLAGS)
+
+test: test-utils
+	@for f in tests/test_*.sh; do bash $$f || exit 1; done
 
 test-utils: $(BUILD_DIR)/test_utils
 	$(BUILD_DIR)/test_utils
