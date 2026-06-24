@@ -1,3 +1,12 @@
+oubliette (0.2.0) unstable; urgency=low
+
+  * Renamed project from lnotes to oubliette; binary renamed from `notes` to `obl`.
+  * Environment variable renamed: LNOTES_DIR → OBL_DIR.
+  * Storage directory renamed: ~/Documents/lnotes → ~/Documents/oubliette
+    (breaking change for anyone with existing notes — move them manually).
+
+ -- Stephen Gemin <s.gemin88@gmail.com>  Tue, 24 Jun 2026 00:00:00 +0000
+
 lnotes (0.1.0) unstable; urgency=low
 
   * Initial release: notes add, notes rm, notes ls, notes search subcommands

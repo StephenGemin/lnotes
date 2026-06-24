@@ -1,4 +1,4 @@
-# lnotes
+# oubliette
 
 A minimal POSIX C CLI note manager. Notes are plain Markdown files with YAML frontmatter.
 Keep it small, portable, and dependency-free.
@@ -25,7 +25,7 @@ scripts/uninstall.sh   uninstall logic
 ```sh
 make
 make clean
-make install   # installs to ~/.local/bin/notes
+make install   # installs to ~/.local/bin/obl
 make test
 make uninstall
 ```
@@ -40,9 +40,9 @@ make uninstall
 
 ## Storage
 * Path precedence — keep this logic in one place, not scattered across commands:
-  * LNOTES_DIR
-  * XDG_DOCUMENTS_DIR/lnotes (Linux)
-  * ~/Documents/lnotes
+  * OBL_DIR
+  * XDG_DOCUMENTS_DIR/oubliette (Linux)
+  * ~/Documents/oubliette
 * Do not perform destructive operations unless the command explicitly requests it.
 * Preserve existing Markdown body content when editing metadata.
 
@@ -61,14 +61,14 @@ Body follows the closing `---`. Simple key/value parsing is sufficient; no full 
 ## CLI conventions
 Minimal, obvious commands:
 ```sh
-notes add "Title" [-c <category>]
-notes rm  <id|title>
-notes ls  [-v] [-c <category>]
-notes search <pattern> [-c <cat>] [-t] [-b]
+obl add "Title" [-c <category>]
+obl rm  <id|title>
+obl ls  [-v] [-c <category>]
+obl search <pattern> [-c <cat>] [-t] [-b]
 ```
 Do not add flags or subcommands without a clear current need.
 Do not rename commands, flags, or environment variables without being asked.
-Error messages must be actionable: notes: could not open file: <path>, not just error.
+Error messages must be actionable: obl: could not open file: <path>, not just error.
 
 ## Code style
 - `static` for file-local functions.
