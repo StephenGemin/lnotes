@@ -48,11 +48,11 @@ echo "install"
 
 PREFIX="$TEST_PREFIX" bash scripts/install.sh > /dev/null
 
-assert_true    "binary installed to PREFIX/bin/notes" \
-               test -f "$TEST_PREFIX/bin/notes"
+assert_true    "binary installed to PREFIX/bin/obl" \
+               test -f "$TEST_PREFIX/bin/obl"
 
-help_output=$("$TEST_PREFIX/bin/notes" -h 2>&1 || true)
-assert_nonempty "notes -h produces output" "$help_output"
+help_output=$("$TEST_PREFIX/bin/obl" -h 2>&1 || true)
+assert_nonempty "obl -h produces output" "$help_output"
 
 # ------------------------------------------------------------------ #
 # Uninstall                                                            #
@@ -62,10 +62,10 @@ echo "uninstall"
 mkdir -p "$TEST_NOTES/01_general"
 touch "$TEST_NOTES/01_general/abc123_sample-note.md"
 
-PREFIX="$TEST_PREFIX" LNOTES_DIR="$TEST_NOTES" bash scripts/uninstall.sh -f > /dev/null
+PREFIX="$TEST_PREFIX" OBL_DIR="$TEST_NOTES" bash scripts/uninstall.sh -f > /dev/null
 
 assert_true "binary removed after uninstall" \
-            test ! -f "$TEST_PREFIX/bin/notes"
+            test ! -f "$TEST_PREFIX/bin/obl"
 
 assert_true "notes directory removed after uninstall" \
             test ! -d "$TEST_NOTES"

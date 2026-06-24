@@ -52,7 +52,7 @@ static void print_field(const char *s, int width) {
 int cmd_search(int argc, char **argv) {
     if (argc < 1) {
         fprintf(stderr,
-            "usage: notes search <pattern> [-c <category>] [-t] [-b]\n"
+            "usage: obl search <pattern> [-c <category>] [-t] [-b]\n"
             "  -t  Search title only\n"
             "  -b  Search body only\n"
             "  (default: search both)\n");
@@ -80,7 +80,7 @@ int cmd_search(int argc, char **argv) {
     if (rc != 0) {
         char errbuf[256];
         regerror(rc, &re, errbuf, sizeof(errbuf));
-        fprintf(stderr, "notes: invalid pattern: %s\n", errbuf);
+        fprintf(stderr, "obl: invalid pattern: %s\n", errbuf);
         return 1;
     }
 

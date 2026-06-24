@@ -155,7 +155,7 @@ int collect_all_notes(const char *filter_cat, Note *notes, int max) {
 
 int cmd_add(int argc, char **argv) {
     if (argc < 1) {
-        fprintf(stderr, "usage: notes add <title> [-c <category>]\n");
+        fprintf(stderr, "usage: obl add <title> [-c <category>]\n");
         return 1;
     }
 
@@ -217,7 +217,7 @@ int cmd_add(int argc, char **argv) {
 
 int cmd_remove(int argc, char **argv) {
     if (argc < 1) {
-        fprintf(stderr, "usage: notes rm <id|title>\n");
+        fprintf(stderr, "usage: obl rm <id|title>\n");
         return 1;
     }
 
@@ -239,7 +239,7 @@ int cmd_remove(int argc, char **argv) {
     }
 
     if (!found) {
-        fprintf(stderr, "notes: '%s' not found\n", target);
+        fprintf(stderr, "obl: '%s' not found\n", target);
         free(notes);
         return 1;
     }

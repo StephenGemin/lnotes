@@ -18,16 +18,16 @@ HEADERS = src/notes.h
 
 all: build
 
-build: $(BUILD_DIR)/notes
+build: $(BUILD_DIR)/obl
 
-$(BUILD_DIR)/notes: $(SOURCES_MAIN) $(HEADERS)
+$(BUILD_DIR)/obl: $(SOURCES_MAIN) $(HEADERS)
 	@mkdir -p $(BUILD_DIR)
 	$(CC) $(CFLAGS) -Isrc -o $@ $(SOURCES_MAIN) $(LDFLAGS)
 
-test: $(BUILD_DIR)/test_notes
-	$(BUILD_DIR)/test_notes
+test: $(BUILD_DIR)/test_obl
+	$(BUILD_DIR)/test_obl
 
-$(BUILD_DIR)/test_notes: $(SOURCES_TEST) $(HEADERS)
+$(BUILD_DIR)/test_obl: $(SOURCES_TEST) $(HEADERS)
 	@mkdir -p $(BUILD_DIR)
 	$(CC) $(CFLAGS) -Isrc -o $@ $(SOURCES_TEST) $(LDFLAGS)
 
