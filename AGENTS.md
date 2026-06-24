@@ -28,15 +28,15 @@ Tests should be small POSIX shell scripts or simple C programs. Do not introduce
 test framework.
 
 ## What requires a conversation first
-Changing the storage format or path resolution logic.
-Renaming, removing, or changing the behavior of any command or flag.
-Adding a new command or flag.
-Adding any dependency outside the C standard library and POSIX.
-Broad rewrites or restructuring across multiple files.
+- Changing the storage format or path resolution logic.
+- Renaming, removing, or changing the behavior of any command or flag.
+- Adding a new command or flag.
+- Adding any dependency outside the C standard library and POSIX.
+- Broad rewrites or restructuring across multiple files.
 
 ## What to avoid
-GNU-only APIs, Linux-only paths, or macOS-only APIs.
-Fixed-size path buffers without care for PATH_MAX.
-Global mutable state.
-External libraries, vendored code, or build systems beyond the existing Makefile.
-Committing build artifacts, editor files, or cache files.
+- GNU-only APIs, Linux-only paths, or macOS-only APIs.
+- Fixed-size path buffers without care for `PATH_MAX`.
+- Global mutable state.
+- External libraries, vendored code, or build systems beyond the existing Makefile.
+- Committing build artifacts, editor files, or cache files.

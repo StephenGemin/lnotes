@@ -5,6 +5,21 @@ Keep it small, portable, and dependency-free.
 
 @AGENTS.md
 
+## Project structure
+
+```
+src/main.c      CLI entry point and command dispatch
+src/notes.c     collect_all_notes, cmd_add, cmd_remove, cmd_list
+src/notes.h     shared Note struct, constants, all declarations
+src/search.c    cmd_search
+src/utils.c     get_notes_dir (storage path logic), parse_frontmatter,
+                generate_id, title_to_slug, open_in_editor
+tests/test_main.c      C unit tests
+tests/test_scripts.sh  shell integration tests
+scripts/install.sh     install logic
+scripts/uninstall.sh   uninstall logic
+```
+
 ## Build
 
 ```sh
@@ -33,14 +48,17 @@ make uninstall
 
 ## Note format
 
+```yaml
 ---
 title: Example title
 created: 2026-06-23T12:00:00Z
 updated: 2026-06-23T12:00:00Z
 ---
-Body follows the closing ---. Simple key/value parsing is sufficient; no full YAML parser.
+```
 
-# CLI conventions
+Body follows the closing `---`. Simple key/value parsing is sufficient; no full YAML parser.
+
+## CLI conventions
 Minimal, obvious commands:
 ```sh
 notes add "Title" [-c <category>]
@@ -53,22 +71,16 @@ Do not rename commands, flags, or environment variables without being asked.
 Error messages must be actionable: notes: could not open file: <path>, not just error.
 
 ## Code style
-static for file-local functions.
-Explicit, predictable ownership for allocated memory.
-Clear names over abbreviations.
-
-## Agent behavior
-Before editing: git status, identify the smallest safe change.
-Provide an initial plan before editing
-Ask before: broad rewrites, changing the storage format, changing CLI behavior, or adding new commands or flags.
-After editing: run make, then make test if tests exist. Report what ran and what didn't.
+- `static` for file-local functions.
+- Explicit, predictable ownership for allocated memory.
+- Clear names over abbreviations.
 
 ## Testing
-Small POSIX shell tests or simple C tests via make test. Do not introduce a test framework.
-New features require tests.
+- Small POSIX shell tests or simple C tests via `make test`. Do not introduce a test framework.
+- New features require tests.
 
 ## Pull requests
-Builds with make.
-Tests pass.
-New features have tests.
-Diff is focused; no formatting churn, no build artifacts, no editor or cache files.
+- Builds with `make`.
+- Tests pass.
+- New features have tests.
+- Diff is focused; no formatting churn, no build artifacts, no editor or cache files.
