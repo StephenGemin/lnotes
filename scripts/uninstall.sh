@@ -10,15 +10,15 @@ while getopts "f" opt; do
 done
 
 PREFIX="${PREFIX:-$HOME/.local}"
-BINARY="$PREFIX/bin/notes"
+BINARY="$PREFIX/bin/obl"
 
 # Mirrors get_notes_dir() in src/utils.c
-if [ -n "${LNOTES_DIR:-}" ]; then
-    NOTES_DIR="$LNOTES_DIR"
+if [ -n "${OBL_DIR:-}" ]; then
+    NOTES_DIR="$OBL_DIR"
 elif [ -n "${XDG_DOCUMENTS_DIR:-}" ]; then
-    NOTES_DIR="$XDG_DOCUMENTS_DIR/lnotes"
+    NOTES_DIR="$XDG_DOCUMENTS_DIR/oubliette"
 else
-    NOTES_DIR="$HOME/Documents/lnotes"
+    NOTES_DIR="$HOME/Documents/oubliette"
 fi
 
 BINARY_EXISTS=0

@@ -3,7 +3,7 @@ set -euo pipefail
 
 PREFIX="${PREFIX:-$HOME/.local}"
 BIN_DIR="$PREFIX/bin"
-BINARY="build/notes"
+BINARY="build/obl"
 
 if [ ! -f "$BINARY" ]; then
     echo "error: '$BINARY' not found. Run 'make build' first." >&2
@@ -11,5 +11,5 @@ if [ ! -f "$BINARY" ]; then
 fi
 
 mkdir -p "$BIN_DIR"
-cp "$BINARY" "$BIN_DIR/notes"
-echo "Installed notes to $BIN_DIR/notes"
+cp "$BINARY" "$BIN_DIR/obl"
+echo "Installed obl to $BIN_DIR/obl"

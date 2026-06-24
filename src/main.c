@@ -4,7 +4,7 @@
 
 static void usage(void) {
     fprintf(stderr,
-        "usage: notes <command> [options]\n"
+        "usage: obl <command> [options]\n"
         "\n"
         "Commands:\n"
         "  add <title> [-c <category>]               Create a new note\n"
@@ -18,7 +18,7 @@ static void usage(void) {
         "  (default: search both title and body)\n"
         "\n"
         "Environment:\n"
-        "  LNOTES_DIR    Override default notes directory (~/<Documents>/lnotes)\n"
+        "  OBL_DIR       Override default notes directory (~/<Documents>/oubliette)\n"
         "  EDITOR        Editor used when creating notes\n"
     );
 }
@@ -42,7 +42,7 @@ int main(int argc, char **argv) {
     if (strcmp(cmd, "search") == 0)                   
         return cmd_search(sub_argc, sub_argv);
 
-    fprintf(stderr, "notes: unknown command '%s'\n\n", cmd);
+    fprintf(stderr, "obl: unknown command '%s'\n\n", cmd);
     usage();
     return 1;
 }

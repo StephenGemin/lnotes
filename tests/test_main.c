@@ -185,7 +185,7 @@ static void test_id_unique_across_calls(void) {
 /* ------------------------------------------------------------------ */
 
 static char *write_tmp_note(const char *content) {
-    char tmpl[] = "/tmp/lnotes_test_XXXXXX";
+    char tmpl[] = "/tmp/obl_test_XXXXXX";
     int fd = mkstemp(tmpl);
     if (fd < 0) return NULL;
     size_t len = strlen(content);

@@ -2,7 +2,7 @@
 
 ## Philosophy
 
-lnotes is intentionally small. Every change should leave it simpler or more correct,
+oubliette is intentionally small. Every change should leave it simpler or more correct,
 not more capable. If a feature request can be satisfied without new code, prefer that.
 
 ## Making changes

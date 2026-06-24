@@ -11,7 +11,7 @@
 #include <sys/wait.h>
 
 int get_notes_dir(char *path, size_t len) {
-    const char *env = getenv("LNOTES_DIR");
+    const char *env = getenv("OBL_DIR");
     if (env) {
         snprintf(path, len, "%s", env);
         return 0;
@@ -20,16 +20,16 @@ int get_notes_dir(char *path, size_t len) {
     /* Respect XDG on Linux */
     const char *xdg = getenv("XDG_DOCUMENTS_DIR");
     if (xdg) {
-        snprintf(path, len, "%s/lnotes", xdg);
+        snprintf(path, len, "%s/oubliette", xdg);
         return 0;
     }
 
     const char *home = getenv("HOME");
     if (!home) {
-        fprintf(stderr, "notes: HOME not set\n");
+        fprintf(stderr, "obl: HOME not set\n");
         return -1;
     }
-    snprintf(path, len, "%s/Documents/lnotes", home);
+    snprintf(path, len, "%s/Documents/oubliette", home);
     return 0;
 }
 
