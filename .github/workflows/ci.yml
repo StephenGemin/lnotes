@@ -91,4 +91,4 @@ jobs:
             --leak-check=full \
             --show-leak-kinds=all \
             --track-origins=yes \
-            build/test_obl
+            build/test_utils
