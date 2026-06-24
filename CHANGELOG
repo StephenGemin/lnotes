@@ -1,3 +1,13 @@
+oubliette (0.3.0) unstable; urgency=low
+
+  * Add `obl export [output-base]` command to archive all notes to a single
+    portable file. Tries tar.gz, zip, and plain tar in order, using the first
+    available tool. Cleans up partial output on failure before trying the next
+    format. Appends the appropriate extension to the output base; defaults to
+    oubliette-YYYY-MM-DD.{tar.gz,zip,tar} in the current directory.
+
+ -- Stephen Gemin <s.gemin88@gmail.com>  Wed, 24 Jun 2026 00:00:00 +0000
+
 oubliette (0.2.0) unstable; urgency=low
 
   * Renamed project from lnotes to oubliette; binary renamed from `notes` to `obl`.

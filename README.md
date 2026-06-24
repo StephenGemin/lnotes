@@ -37,11 +37,17 @@ make uninstall FORCE=1
 ## Commands
 
 ```
-obl add <title> [-c <category>]            create a note and open in $EDITOR
-obl rm  <id|title>                         remove a note (prompts for confirmation)
-obl ls  [-v] [-c <category>]               list notes, newest first
-obl search <pattern> [-c <cat>] [-t] [-b]  search notes (POSIX ERE, case-insensitive)
+obl add    <title> [-c <category>]            create a note and open in $EDITOR
+obl rm     <id|title>                         remove a note (prompts for confirmation)
+obl ls     [-v] [-c <category>]               list notes, newest first
+obl search <pattern> [-c <cat>] [-t] [-b]     search notes (POSIX ERE, case-insensitive)
+obl export [output-base]                       archive all notes to a file
 ```
+
+`obl export` tries `tar.gz`, then `zip`, then plain `tar`, and uses whichever archive
+tool is available. The output file gets the appropriate extension appended
+(e.g. `obl export /mnt/usb/backup` → `backup.tar.gz`). Omitting the argument
+creates `oubliette-YYYY-MM-DD.tar.gz` (or equivalent) in the current directory.
 
 ## Directory layout
 

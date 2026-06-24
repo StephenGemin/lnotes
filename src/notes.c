@@ -8,6 +8,8 @@
 #include <time.h>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 static const char *DEFAULT_CATEGORIES[] = {
     "01_general",
@@ -372,4 +374,116 @@ int cmd_list(int argc, char **argv) {
 
     free(notes);
     return 0;
+}
+
+/* ------------------------------------------------------------------ */
+/* cmd_export                                                           */
+/* ------------------------------------------------------------------ */
+
+static int run_archive(const char *const args[]) {
+    pid_t pid = fork();
+    if (pid < 0) return -1;
+    if (pid == 0) {
+        execvp(args[0], (char *const *)args);
+        _exit(127);
+    }
+    int status;
+    waitpid(pid, &status, 0);
+    return WIFEXITED(status) ? WEXITSTATUS(status) : -1;
+}
+
+int cmd_export(int argc, char **argv) {
+    char notes_dir[2048];
+    if (get_notes_dir(notes_dir, sizeof(notes_dir)) != 0)
+        return 1;
+
+    /* Strip trailing slashes */
+    size_t nd_len = strlen(notes_dir);
+    while (nd_len > 1 && notes_dir[nd_len - 1] == '/') notes_dir[--nd_len] = '\0';
+
+    /* Split into parent directory and basename for -C archiving.
+       Use 2048-byte buffers: notes_dir is at most 2047 chars. */
+    char notes_parent[2048];
+    char notes_base[2048];
+    const char *sl = strrchr(notes_dir, '/');
+    if (sl && sl != notes_dir) {
+        snprintf(notes_parent, sizeof(notes_parent), "%.*s",
+                 (int)(sl - notes_dir), notes_dir);
+        snprintf(notes_base, sizeof(notes_base), "%s", sl + 1);
+    } else {
+        snprintf(notes_parent, sizeof(notes_parent), ".");
+        snprintf(notes_base, sizeof(notes_base), "%s", notes_dir);
+    }
+
+    /* Resolve output base to an absolute path.
+       Keep cwd to 2047 chars so cwd + suffix fits in NOTES_MAX_PATH. */
+    char outbase[NOTES_MAX_PATH];
+    if (argc > 0) {
+        if (argv[0][0] == '/') {
+            snprintf(outbase, sizeof(outbase), "%s", argv[0]);
+        } else {
+            char cwd[2048];
+            if (!getcwd(cwd, sizeof(cwd))) {
+                fprintf(stderr, "obl: could not get current directory\n");
+                return 1;
+            }
+            snprintf(outbase, sizeof(outbase), "%s/%s", cwd, argv[0]);
+        }
+    } else {
+        char cwd[2048];
+        if (!getcwd(cwd, sizeof(cwd))) {
+            fprintf(stderr, "obl: could not get current directory\n");
+            return 1;
+        }
+        time_t t = time(NULL);
+        struct tm *tm_info = localtime(&t);
+        char datestr[32];
+        strftime(datestr, sizeof(datestr), "%Y-%m-%d", tm_info);
+        snprintf(outbase, sizeof(outbase), "%s/oubliette-%s", cwd, datestr);
+    }
+
+    static const struct { const char *ext; const char *label; } formats[] = {
+        { ".tar.gz", "tar.gz" },
+        { ".zip",    "zip"    },
+        { ".tar",    "tar"    },
+    };
+    int nformats = (int)(sizeof(formats) / sizeof(formats[0]));
+
+    for (int i = 0; i < nformats; i++) {
+        char outpath[NOTES_MAX_PATH];
+        snprintf(outpath, sizeof(outpath), "%s%s", outbase, formats[i].ext);
+
+        int rc;
+        if (i == 1) {
+            /* zip needs cwd=parent so the archive stores relative paths */
+            pid_t pid = fork();
+            if (pid < 0) {
+                rc = -1;
+            } else if (pid == 0) {
+                if (chdir(notes_parent) != 0) _exit(127);
+                execlp("zip", "zip", "-r", outpath, notes_base, (char *)NULL);
+                _exit(127);
+            } else {
+                int status;
+                waitpid(pid, &status, 0);
+                rc = WIFEXITED(status) ? WEXITSTATUS(status) : -1;
+            }
+        } else {
+            const char *flag = (i == 0) ? "-czf" : "-cf";
+            const char *args[] = { "tar", flag, outpath, "-C", notes_parent, notes_base, NULL };
+            rc = run_archive(args);
+        }
+
+        if (rc == 0) {
+            printf("exported: %s\n", outpath);
+            return 0;
+        }
+
+        unlink(outpath);
+        if (i < nformats - 1)
+            fprintf(stderr, "obl: %s failed, trying next format...\n", formats[i].label);
+    }
+
+    fprintf(stderr, "obl: export failed: no supported archive tool available\n");
+    return 1;
 }
