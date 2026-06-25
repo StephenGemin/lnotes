@@ -34,7 +34,7 @@ int  collect_all_notes(const char *filter_cat, Note *notes, int max);
 
 /* commands */
 int cmd_add(int argc, char **argv);
-int cmd_remove(int argc, char **argv);
+int cmd_trash(int argc, char **argv);
 int cmd_list(int argc, char **argv);
 int cmd_search(int argc, char **argv);
 int cmd_open(int argc, char **argv);

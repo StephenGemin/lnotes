@@ -10,7 +10,7 @@ static void usage(void) {
         "  add    <title> [-c <category>]            Create a new note\n"
         "  raise  <id|title>                         Open a note in $EDITOR\n"
         "  view   <id|title>                         Print a note to stdout\n"
-        "  rm     <id|title>                         Remove a note\n"
+        "  trash  <id|title>                         Move a note to the trash\n"
         "  ls     [-v] [-c <category>]               List notes\n"
         "  search <pattern> [-c <cat>] [-t] [-b]     Search notes (regex)\n"
         "  export [output-base]                       Archive all notes to a file\n"
@@ -20,6 +20,11 @@ static void usage(void) {
         "  -t    Title only\n"
         "  -b    Body only\n"
         "  (default: search both title and body)\n"
+        "\n"
+        "Trash subcommands:\n"
+        "  list                  List trashed notes\n"
+        "  restore <id|title>    Restore a note to its category\n"
+        "  clear                 Permanently empty the trash\n"
         "\n"
         "Environment:\n"
         "  OBL_DIR       Override default notes directory (~/<Documents>/oubliette)\n"
@@ -39,8 +44,8 @@ int main(int argc, char **argv) {
 
     if (strcmp(cmd, "add") == 0)
         return cmd_add(sub_argc, sub_argv);
-    if (strcmp(cmd, "rm") == 0 || strcmp(cmd, "remove") == 0)
-        return cmd_remove(sub_argc, sub_argv);
+    if (strcmp(cmd, "trash") == 0)
+        return cmd_trash(sub_argc, sub_argv);
     if (strcmp(cmd, "ls") == 0 || strcmp(cmd, "list") == 0)
         return cmd_list(sub_argc, sub_argv);
     if (strcmp(cmd, "search") == 0)

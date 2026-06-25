@@ -229,57 +229,247 @@ int cmd_add(int argc, char **argv) {
 }
 
 /* ------------------------------------------------------------------ */
-/* cmd_remove                                                           */
+/* cmd_trash                                                            */
 /* ------------------------------------------------------------------ */
 
-int cmd_remove(int argc, char **argv) {
-    if (argc < 1) {
-        fprintf(stderr, "usage: obl rm <id|title>\n");
-        return 1;
+/* Reused by `trash list`; both are defined in the cmd_list section. */
+static int  cmp_by_date_desc(const void *a, const void *b);
+static void print_field(const char *s, int width);
+
+/* Path of the trash directory: <notes dir>/.trash. Because it is dot-
+   prefixed, collect_all_notes skips it, so trashed notes never appear in
+   `ls` or `search` while still living inside the store. */
+static int get_trash_dir(char *out, size_t len) {
+    char base[2048];
+    if (get_notes_dir(base, sizeof(base)) != 0) return -1;
+    snprintf(out, len, "%s/.trash", base);
+    return 0;
+}
+
+static const char *path_basename(const char *path) {
+    const char *sl = strrchr(path, '/');
+    return sl ? sl + 1 : path;
+}
+
+/* Parse every .md file in the trash into `notes`. Returns the count, 0
+   when the trash does not exist yet, or -1 on error. */
+static int collect_trash_notes(Note *notes, int max) {
+    char trash[3072];
+    if (get_trash_dir(trash, sizeof(trash)) != 0) return -1;
+
+    DIR *d = opendir(trash);
+    if (!d) return 0;
+
+    int count = 0;
+    struct dirent *e;
+    while ((e = readdir(d)) != NULL && count < max) {
+        if (e->d_name[0] == '.') continue;
+        size_t nlen = strlen(e->d_name);
+        if (nlen < 4 || strcmp(e->d_name + nlen - 3, ".md") != 0) continue;
+        char fpath[NOTES_MAX_PATH];
+        snprintf(fpath, sizeof(fpath), "%s/%s", trash, e->d_name);
+        if (parse_frontmatter(fpath, &notes[count]) == 0)
+            count++;
     }
+    closedir(d);
+    return count;
+}
 
-    const char *target = argv[0];
+/* Index of the note matching `target` by id or title, or -1. */
+static int find_note(const Note *notes, int count, const char *target) {
+    for (int i = 0; i < count; i++) {
+        if (strcmp(notes[i].id, target) == 0 ||
+            strcasecmp(notes[i].title, target) == 0)
+            return i;
+    }
+    return -1;
+}
 
+/* trash <id|title>: move a live note into the trash (recoverable). */
+static int trash_note(const char *target) {
     Note *notes = malloc(NOTES_MAX_COUNT * sizeof(Note));
     if (!notes) { perror("malloc"); return 1; }
 
     int count = collect_all_notes(NULL, notes, NOTES_MAX_COUNT);
     if (count < 0) { free(notes); return 1; }
 
-    Note *found = NULL;
-    for (int i = 0; i < count; i++) {
-        if (strcmp(notes[i].id, target) == 0 ||
-            strcasecmp(notes[i].title, target) == 0) {
-            found = &notes[i];
-            break;
-        }
-    }
-
-    if (!found) {
+    int idx = find_note(notes, count, target);
+    if (idx < 0) {
         fprintf(stderr, "obl: '%s' not found\n", target);
         free(notes);
         return 1;
     }
 
-    printf("Remove '%s' (%s)? [y/N] ", found->title, found->id);
+    char trash[3072];
+    if (get_trash_dir(trash, sizeof(trash)) != 0) { free(notes); return 1; }
+    makedirs(trash);
+
+    char dest[NOTES_MAX_PATH];
+    snprintf(dest, sizeof(dest), "%s/%s", trash,
+             path_basename(notes[idx].filepath));
+
+    if (rename(notes[idx].filepath, dest) != 0) {
+        fprintf(stderr, "obl: could not move to trash: %s\n",
+                notes[idx].filepath);
+        free(notes);
+        return 1;
+    }
+
+    printf("Trashed %s: %s\n", notes[idx].id, notes[idx].title);
+    free(notes);
+    return 0;
+}
+
+/* trash list: show what is currently in the trash, newest first. */
+static int trash_list(void) {
+    Note *notes = malloc(NOTES_MAX_COUNT * sizeof(Note));
+    if (!notes) { perror("malloc"); return 1; }
+
+    int count = collect_trash_notes(notes, NOTES_MAX_COUNT);
+    if (count < 0) { free(notes); return 1; }
+
+    if (count == 0) {
+        printf("Trash is empty.\n");
+        free(notes);
+        return 0;
+    }
+
+    qsort(notes, count, sizeof(Note), cmp_by_date_desc);
+
+    printf("%-8s  %-32s  %-20s  %s\n", "ID", "Title", "Category", "Date");
+    printf("%-8s  %-32s  %-20s  %s\n",
+           "--------",
+           "--------------------------------",
+           "--------------------",
+           "----------");
+
+    for (int i = 0; i < count; i++) {
+        print_field(notes[i].id, 8);
+        printf("  ");
+        print_field(notes[i].title, 32);
+        printf("  ");
+        print_field(notes[i].category, 20);
+        printf("  %s\n", notes[i].date);
+    }
+
+    free(notes);
+    return 0;
+}
+
+/* trash restore <id|title>: move a note back to its original category. */
+static int trash_restore(const char *target) {
+    Note *notes = malloc(NOTES_MAX_COUNT * sizeof(Note));
+    if (!notes) { perror("malloc"); return 1; }
+
+    int count = collect_trash_notes(notes, NOTES_MAX_COUNT);
+    if (count < 0) { free(notes); return 1; }
+
+    int idx = find_note(notes, count, target);
+    if (idx < 0) {
+        fprintf(stderr, "obl: '%s' is not in the trash\n", target);
+        free(notes);
+        return 1;
+    }
+
+    char base[2048];
+    if (get_notes_dir(base, sizeof(base)) != 0) { free(notes); return 1; }
+
+    /* The note's home category is recorded in its frontmatter, so a flat
+       trash still restores to the right place. */
+    char cat_dir[3072];
+    if (find_category_dir(base, notes[idx].category,
+                          cat_dir, sizeof(cat_dir)) != 0) {
+        fprintf(stderr,
+                "obl: category '%s' no longer exists; recreate it with "
+                "'obl cat add %s' and restore again\n",
+                notes[idx].category, notes[idx].category);
+        free(notes);
+        return 1;
+    }
+
+    char dest[NOTES_MAX_PATH];
+    snprintf(dest, sizeof(dest), "%s/%s", cat_dir,
+             path_basename(notes[idx].filepath));
+
+    if (rename(notes[idx].filepath, dest) != 0) {
+        fprintf(stderr, "obl: could not restore: %s\n", notes[idx].filepath);
+        free(notes);
+        return 1;
+    }
+
+    printf("Restored %s: %s\n", notes[idx].id, notes[idx].title);
+    free(notes);
+    return 0;
+}
+
+/* trash clear: permanently delete everything in the trash. */
+static int trash_clear(void) {
+    char trash[3072];
+    if (get_trash_dir(trash, sizeof(trash)) != 0) return 1;
+
+    Note *notes = malloc(NOTES_MAX_COUNT * sizeof(Note));
+    if (!notes) { perror("malloc"); return 1; }
+    int count = collect_trash_notes(notes, NOTES_MAX_COUNT);
+    free(notes);
+    if (count < 0) return 1;
+    if (count == 0) {
+        printf("Trash is empty.\n");
+        return 0;
+    }
+
+    printf("Permanently delete %d note%s in the trash? [y/N] ",
+           count, count == 1 ? "" : "s");
     fflush(stdout);
 
     char ans[8];
     if (!fgets(ans, sizeof(ans), stdin) || (ans[0] != 'y' && ans[0] != 'Y')) {
         printf("Aborted.\n");
-        free(notes);
         return 0;
     }
 
-    if (remove(found->filepath) != 0) {
-        perror("remove");
-        free(notes);
+    DIR *d = opendir(trash);
+    if (!d) { printf("Trash is empty.\n"); return 0; }
+
+    int removed = 0;
+    struct dirent *e;
+    while ((e = readdir(d)) != NULL) {
+        if (e->d_name[0] == '.') continue;
+        char fpath[NOTES_MAX_PATH];
+        snprintf(fpath, sizeof(fpath), "%s/%s", trash, e->d_name);
+        if (remove(fpath) == 0) removed++;
+    }
+    closedir(d);
+    rmdir(trash); /* drop the now-empty dir; harmless if it is not empty */
+
+    printf("Emptied trash (%d note%s).\n", removed, removed == 1 ? "" : "s");
+    return 0;
+}
+
+int cmd_trash(int argc, char **argv) {
+    if (argc < 1) {
+        fprintf(stderr,
+            "usage: obl trash <id|title>          move a note to the trash\n"
+            "       obl trash list                list trashed notes\n"
+            "       obl trash restore <id|title>  restore a note\n"
+            "       obl trash clear               permanently empty the trash\n");
         return 1;
     }
 
-    printf("Removed %s: %s\n", found->id, found->title);
-    free(notes);
-    return 0;
+    const char *action = argv[0];
+    if (strcmp(action, "list") == 0)
+        return trash_list();
+    if (strcmp(action, "clear") == 0)
+        return trash_clear();
+    if (strcmp(action, "restore") == 0) {
+        if (argc < 2) {
+            fprintf(stderr, "usage: obl trash restore <id|title>\n");
+            return 1;
+        }
+        return trash_restore(argv[1]);
+    }
+
+    /* No subcommand matched: treat the argument as a note to trash. */
+    return trash_note(action);
 }
 
 /* ------------------------------------------------------------------ */
