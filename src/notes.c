@@ -324,6 +324,65 @@ int cmd_open(int argc, char **argv) {
 }
 
 /* ------------------------------------------------------------------ */
+/* cmd_view                                                             */
+/* ------------------------------------------------------------------ */
+
+int cmd_view(int argc, char **argv) {
+    if (argc < 1) {
+        fprintf(stderr, "usage: obl view <id|title>\n");
+        return 1;
+    }
+
+    const char *target = argv[0];
+
+    Note *notes = malloc(NOTES_MAX_COUNT * sizeof(Note));
+    if (!notes) { perror("malloc"); return 1; }
+
+    int count = collect_all_notes(NULL, notes, NOTES_MAX_COUNT);
+    if (count < 0) { free(notes); return 1; }
+
+    Note *found = NULL;
+    for (int i = 0; i < count; i++) {
+        if (strcmp(notes[i].id, target) == 0 ||
+            strcasecmp(notes[i].title, target) == 0) {
+            found = &notes[i];
+            break;
+        }
+    }
+
+    if (!found) {
+        fprintf(stderr, "obl: '%s' not found\n", target);
+        free(notes);
+        return 1;
+    }
+
+    char filepath[NOTES_MAX_PATH];
+    snprintf(filepath, sizeof(filepath), "%s", found->filepath);
+    free(notes);
+
+    /* Stream the note verbatim (frontmatter and body) to stdout so it
+       stays composable: `obl view <id> | glow`, `> backup.md`, etc. */
+    FILE *f = fopen(filepath, "r");
+    if (!f) {
+        fprintf(stderr, "obl: could not open file: %s\n", filepath);
+        return 1;
+    }
+
+    char buf[4096];
+    size_t n;
+    while ((n = fread(buf, 1, sizeof(buf), f)) > 0) {
+        if (fwrite(buf, 1, n, stdout) != n) {
+            fprintf(stderr, "obl: write error\n");
+            fclose(f);
+            return 1;
+        }
+    }
+
+    fclose(f);
+    return 0;
+}
+
+/* ------------------------------------------------------------------ */
 /* cmd_list                                                             */
 /* ------------------------------------------------------------------ */
 

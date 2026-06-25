@@ -38,6 +38,7 @@ int cmd_remove(int argc, char **argv);
 int cmd_list(int argc, char **argv);
 int cmd_search(int argc, char **argv);
 int cmd_open(int argc, char **argv);
+int cmd_view(int argc, char **argv);
 int cmd_export(int argc, char **argv);
 int cmd_category(int argc, char **argv);
 

@@ -9,6 +9,7 @@ static void usage(void) {
         "Commands:\n"
         "  add    <title> [-c <category>]            Create a new note\n"
         "  raise  <id|title>                         Open a note in $EDITOR\n"
+        "  view   <id|title>                         Print a note to stdout\n"
         "  rm     <id|title>                         Remove a note\n"
         "  ls     [-v] [-c <category>]               List notes\n"
         "  search <pattern> [-c <cat>] [-t] [-b]     Search notes (regex)\n"
@@ -46,6 +47,8 @@ int main(int argc, char **argv) {
         return cmd_search(sub_argc, sub_argv);
     if (strcmp(cmd, "raise") == 0)
         return cmd_open(sub_argc, sub_argv);
+    if (strcmp(cmd, "view") == 0)
+        return cmd_view(sub_argc, sub_argv);
     if (strcmp(cmd, "export") == 0)
         return cmd_export(sub_argc, sub_argv);
     if (strcmp(cmd, "cat") == 0 || strcmp(cmd, "category") == 0)
