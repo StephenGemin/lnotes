@@ -40,7 +40,10 @@ make uninstall FORCE=1
 obl add    <title> [-c <category>]            create a note and open in $EDITOR
 obl raise  <id|title>                         open an existing note in $EDITOR
 obl view   <id|title>                         print a note to stdout (pipe to a pager/renderer)
-obl rm     <id|title>                         remove a note (prompts for confirmation)
+obl trash  <id|title>                         move a note to the trash (recoverable)
+obl trash  list                               list trashed notes
+obl trash  restore <id|title>                 restore a note to its category
+obl trash  clear                              permanently empty the trash (prompts)
 obl ls     [-v] [-c <category>]               list notes, newest first
 obl search <pattern> [-c <cat>] [-t] [-b]     search notes (POSIX ERE, case-insensitive)
 obl export [output-base]                       archive all notes to a file
@@ -68,6 +71,11 @@ The numeric prefix is the category's priority. Categories are managed explicitly
 with `obl cat add` / `obl cat rm`; `obl add` will not create one on the fly.
 Removing a category renumbers the rest so the priorities stay contiguous.
 Each note is a single file named `<id>_<slug>.md`.
+
+`obl trash` moves a note into a hidden `.trash/` directory inside the store rather
+than deleting it. Trashed notes are excluded from `ls` and `search` but remain
+recoverable with `obl trash restore` until you run `obl trash clear`. They are still
+included in `obl export`.
 
 ## Configuration
 
