@@ -39,6 +39,7 @@ make uninstall FORCE=1
 ```
 obl add    <title> [-c <category>]            create a note and open in $EDITOR
 obl raise  <id|title>                         open an existing note in $EDITOR
+obl view   <id|title>                         print a note to stdout (pipe to a pager/renderer)
 obl rm     <id|title>                         remove a note (prompts for confirmation)
 obl ls     [-v] [-c <category>]               list notes, newest first
 obl search <pattern> [-c <cat>] [-t] [-b]     search notes (POSIX ERE, case-insensitive)

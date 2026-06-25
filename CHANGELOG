@@ -1,3 +1,13 @@
+oubliette (0.5.0) unstable; urgency=low
+
+  * Add `obl view <id|title>` to print a note to stdout. Resolves a note the
+    same way `raise` and `rm` do, then streams the file verbatim (frontmatter
+    and body), keeping it composable: `obl view <id> | glow`,
+    `obl view <id> > backup.md`. No renderer or pager is built in, so it stays
+    dependency-free and leaves formatting to the user's tools.
+
+ -- Stephen Gemin <s.gemin88@gmail.com>  Thu, 25 Jun 2026 00:00:00 +0000
+
 oubliette (0.4.0) unstable; urgency=low
 
   * Categories are now explicit. `obl add` no longer creates a category on
