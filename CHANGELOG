@@ -1,3 +1,17 @@
+oubliette (0.4.0) unstable; urgency=low
+
+  * Categories are now explicit. `obl add` no longer creates a category on
+    demand; it errors if the category does not exist (breaking change for
+    anyone relying on `obl add -c <new-category>` to create one).
+  * Add `obl cat add <name>` and `obl cat rm <name>` to manage categories.
+    `cat add` appends at the next priority prefix; `cat rm` removes an empty
+    category and compacts the remaining priorities so the numbering stays
+    contiguous. Removing a non-empty category is refused.
+  * Default categories are now seeded only when the store is first created, so
+    removing a category is no longer undone by the next `obl add`.
+
+ -- Stephen Gemin <s.gemin88@gmail.com>  Wed, 24 Jun 2026 00:00:00 +0000
+
 oubliette (0.3.0) unstable; urgency=low
 
   * Add `obl export [output-base]` command to archive all notes to a single

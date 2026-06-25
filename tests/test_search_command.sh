@@ -49,6 +49,10 @@ PREFIX="$TEST_PREFIX" bash scripts/install.sh > /dev/null
 # ------------------------------------------------------------------ #
 echo "search"
 
+# Categories must exist before notes can be filed under them
+OBL_DIR="$TEST_NOTES" "$OBL" cat add work     >/dev/null 2>&1
+OBL_DIR="$TEST_NOTES" "$OBL" cat add personal  >/dev/null 2>&1
+
 add_out=$(OBL_DIR="$TEST_NOTES" EDITOR=true "$OBL" add "Searchable Alpha" -c work 2>&1)
 note_id=$(echo "$add_out" | grep -oE '[0-9a-f]{8}' | head -1)
 note_file=$(find "$TEST_NOTES" -name "${note_id}_*.md" | head -1)

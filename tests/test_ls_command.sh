@@ -54,7 +54,9 @@ empty_out=$(OBL_DIR="$TEST_NOTES" "$OBL" ls 2>&1)
 assert_true "obl ls on empty store reports no notes" \
     sh -c "echo '$empty_out' | grep -q 'No notes found'"
 
-# Seed two notes in different categories
+# Seed two notes in different categories (categories must exist first)
+OBL_DIR="$TEST_NOTES" "$OBL" cat add work     >/dev/null 2>&1
+OBL_DIR="$TEST_NOTES" "$OBL" cat add personal  >/dev/null 2>&1
 OBL_DIR="$TEST_NOTES" EDITOR=true "$OBL" add "Alpha Note" -c work    >/dev/null 2>&1
 OBL_DIR="$TEST_NOTES" EDITOR=true "$OBL" add "Beta Note"  -c personal >/dev/null 2>&1
 

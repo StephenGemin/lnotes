@@ -43,6 +43,8 @@ obl rm     <id|title>                         remove a note (prompts for confirm
 obl ls     [-v] [-c <category>]               list notes, newest first
 obl search <pattern> [-c <cat>] [-t] [-b]     search notes (POSIX ERE, case-insensitive)
 obl export [output-base]                       archive all notes to a file
+obl cat add <name>                            create a category
+obl cat rm  <name>                            remove an empty category
 ```
 
 `obl export` tries `tar.gz`, then `zip`, then plain `tar`, and uses whichever archive
@@ -61,7 +63,9 @@ creates `oubliette-YYYY-MM-DD.tar.gz` (or equivalent) in the current directory.
   05_medical/
 ```
 
-New categories are created automatically with the next available prefix.
+The numeric prefix is the category's priority. Categories are managed explicitly
+with `obl cat add` / `obl cat rm`; `obl add` will not create one on the fly.
+Removing a category renumbers the rest so the priorities stay contiguous.
 Each note is a single file named `<id>_<slug>.md`.
 
 ## Configuration

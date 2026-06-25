@@ -13,6 +13,7 @@ static void usage(void) {
         "  ls     [-v] [-c <category>]               List notes\n"
         "  search <pattern> [-c <cat>] [-t] [-b]     Search notes (regex)\n"
         "  export [output-base]                       Archive all notes to a file\n"
+        "  cat    <add|rm> <name>                    Create or remove a category\n"
         "\n"
         "Search flags:\n"
         "  -t    Title only\n"
@@ -47,6 +48,8 @@ int main(int argc, char **argv) {
         return cmd_open(sub_argc, sub_argv);
     if (strcmp(cmd, "export") == 0)
         return cmd_export(sub_argc, sub_argv);
+    if (strcmp(cmd, "cat") == 0 || strcmp(cmd, "category") == 0)
+        return cmd_category(sub_argc, sub_argv);
 
     fprintf(stderr, "obl: unknown command '%s'\n\n", cmd);
     usage();
