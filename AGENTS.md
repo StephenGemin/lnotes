@@ -7,7 +7,7 @@ Keep it small, portable, and dependency-free.
 
 ```
 src/main.c      CLI entry point and command dispatch
-src/notes.c     collect_all_notes, cmd_add, cmd_remove, cmd_list, cmd_category
+src/notes.c     collect_all_notes, cmd_add, cmd_trash, cmd_list, cmd_category
 src/notes.h     shared Note struct, constants, all declarations
 src/search.c    cmd_search
 src/utils.c     get_notes_dir (storage path logic), parse_frontmatter,
@@ -99,7 +99,7 @@ Minimal, obvious commands:
 ```sh
 obl add   "Title" [-c <category>]
 obl raise <id|title>
-obl rm    <id|title>
+obl trash <id|title> | list | restore <id|title> | clear
 obl ls    [-v] [-c <category>]
 obl search <pattern> [-c <cat>] [-t] [-b]
 obl cat   <add|rm> <name>
